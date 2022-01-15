@@ -8,7 +8,7 @@ class Clientworker:
         pass
 
     def connectToServer(self, address, port):
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             self.client.connect((address, port))
         except:
@@ -23,7 +23,8 @@ class Clientworker:
         self.bytedata = b''
         self.seqnum = 1
         while(True):
-            response = self.client.recv(1000000)
+            self.client.send(b'hi')
+            response = self.client.recv(200000)
             self.rtp = RtpPacket()
             self.rtp.decode(response)
             print(len(self.rtp.getPayload()))
