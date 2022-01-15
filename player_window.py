@@ -1,78 +1,108 @@
+from ast import arg
+from concurrent.futures import thread
 import pygame
+import threading
 
-pygame.init()
-WIDTH, HEIGHT = 16*50, 10*50
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+class PlayerWindow:
+    def __init__(self):
+        pygame.init()
+        self.WIDTH, self.HEIGHT = 16*60, 10*60
+        self.WIN = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
 
-YELLOW_BACKGROUND = (232, 221, 203)
-BUTTON_COLOR = (3, 101, 110)
-BUTTON_PRESSED_COLOR = (3, 54, 73)
-WORD_COLOR = (205, 179 ,128)
-FONT = pygame.font.SysFont('Segoe UI Black', 25, False, False)
+        self.YELLOW_BACKGROUND = (232, 221, 203)
+        self.BUTTON_COLOR = (3, 101, 110)
+        self.BUTTON_PRESSED_COLOR = (3, 54, 73)
+        self.WORD_COLOR = (205, 179 ,128)
+        self.FONT = pygame.font.SysFont('Segoe UI Black', int(self.WIDTH/30), False, False)
 
-pygame.display.set_caption("ICN final project")
+        pygame.display.set_caption("ICN final project")
 
-# button
-set_up = FONT.render('SET UP', True, WORD_COLOR) 
-play = FONT.render('PLAY', True, WORD_COLOR)
-pause = FONT.render('PAUSE', True, WORD_COLOR)
-teardown = FONT.render('TEARDOWN', True, WORD_COLOR)
+        
 
-def update_window():
-    WIN.fill(YELLOW_BACKGROUND)
-    
-    mouse = pygame.mouse.get_pos()      
-    if 5 <= mouse[0] <= WIDTH/4*1-50 and HEIGHT*9/10 <= mouse[1] <= HEIGHT-10:
-        pygame.draw.rect(WIN, BUTTON_PRESSED_COLOR, [5,HEIGHT*9/10,WIDTH/4-50,40]) 
-    else:
-        pygame.draw.rect(WIN, BUTTON_COLOR, [5,HEIGHT*9/10,WIDTH/4-50,40])
-    
-    if WIDTH/4*1 <= mouse[0] <= WIDTH/4*2-50 and HEIGHT*9/10 <= mouse[1] <= HEIGHT-10:
-        pygame.draw.rect(WIN, BUTTON_PRESSED_COLOR, [WIDTH/4,HEIGHT*9/10,WIDTH/4-50,40]) 
-    else:
-        pygame.draw.rect(WIN, BUTTON_COLOR, [WIDTH/4,HEIGHT*9/10,WIDTH/4-50,40])
-    
-    if WIDTH/4*2 <= mouse[0] <= WIDTH/4*3-50 and HEIGHT*9/10 <= mouse[1] <= HEIGHT-10:
-        pygame.draw.rect(WIN, BUTTON_PRESSED_COLOR, [WIDTH/4*2,HEIGHT*9/10,WIDTH/4-50,40]) 
-    else:
-        pygame.draw.rect(WIN, BUTTON_COLOR, [WIDTH/4*2,HEIGHT*9/10,WIDTH/4-50,40])
-    
-    if WIDTH/4*3 <= mouse[0] <= WIDTH/4*4-20 and HEIGHT*9/10 <= mouse[1] <= HEIGHT-10:
-        pygame.draw.rect(WIN, BUTTON_PRESSED_COLOR, [WIDTH/4*3,HEIGHT*9/10,WIDTH/4-20,40]) 
-    else:
-        pygame.draw.rect(WIN, BUTTON_COLOR, [WIDTH/4*3,HEIGHT*9/10,WIDTH/4-20,40])
+    def update_window(self):
+        self.WIN.fill(self.YELLOW_BACKGROUND)
+        
+        # image
+        picture = pygame.image.load('test.jpg')
+        picture = pygame.transform.scale(picture, (self.WIDTH, self.HEIGHT*9/10))
+        self.WIN.blit(picture, (0,0))
+        
+        # button & press
+        mouse = pygame.mouse.get_pos()      
+        if 5 <= mouse[0] <= self.WIDTH/4*1-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
+            pygame.draw.rect(self.WIN, self.BUTTON_PRESSED_COLOR, [5,self.HEIGHT*9/10,self.WIDTH/4-50,self.HEIGHT/10]) 
+        else:
+            pygame.draw.rect(self.WIN, self.BUTTON_COLOR, [5,self.HEIGHT*9/10,self.WIDTH/4-50,self.HEIGHT/10])
+        
+        if self.WIDTH/4*1 <= mouse[0] <= self.WIDTH/4*2-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
+            pygame.draw.rect(self.WIN, self.BUTTON_PRESSED_COLOR, [self.WIDTH/4,self.HEIGHT*9/10,self.WIDTH/4-50,self.HEIGHT/10]) 
+        else:
+            pygame.draw.rect(self.WIN, self.BUTTON_COLOR, [self.WIDTH/4,self.HEIGHT*9/10,self.WIDTH/4-50,self.HEIGHT/10])
+        
+        if self.WIDTH/4*2 <= mouse[0] <= self.WIDTH/4*3-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
+            pygame.draw.rect(self.WIN, self.BUTTON_PRESSED_COLOR, [self.WIDTH/4*2,self.HEIGHT*9/10,self.WIDTH/4-50,self.HEIGHT/10]) 
+        else:
+            pygame.draw.rect(self.WIN, self.BUTTON_COLOR, [self.WIDTH/4*2,self.HEIGHT*9/10,self.WIDTH/4-50,self.HEIGHT/10])
+        
+        if self.WIDTH/4*3 <= mouse[0] <= self.WIDTH/4*4-20 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
+            pygame.draw.rect(self.WIN, self.BUTTON_PRESSED_COLOR, [self.WIDTH/4*3,self.HEIGHT*9/10,self.WIDTH/4-20,self.HEIGHT/10]) 
+        else:
+            pygame.draw.rect(self.WIN, self.BUTTON_COLOR, [self.WIDTH/4*3,self.HEIGHT*9/10,self.WIDTH/4-20,self.HEIGHT/10])
 
-    
-    OFFSET = 35
-    WIN.blit(set_up, (OFFSET, HEIGHT*9/10))
-    WIN.blit(play, (WIDTH/4*1+OFFSET, HEIGHT*9/10))
-    WIN.blit(pause, (WIDTH/4*2+OFFSET, HEIGHT*9/10))
-    WIN.blit(teardown, (WIDTH/4*3+OFFSET/2, HEIGHT*9/10))
-    pygame.display.update()
-    
-def window_handler():
-    run = True
-    while run:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse = pygame.mouse.get_pos()
-                if 5 <= mouse[0] <= WIDTH/4*1-50 and HEIGHT*9/10 <= mouse[1] <= HEIGHT-10:
-                    print('set up')
-                    # set up
-                elif WIDTH/4*1 <= mouse[0] <= WIDTH/4*2-50 and HEIGHT*9/10 <= mouse[1] <= HEIGHT-10:
-                    print('play')
-                    # play
-                elif WIDTH/4*2 <= mouse[0] <= WIDTH/4*3-50 and HEIGHT*9/10 <= mouse[1] <= HEIGHT-10:
-                    print('pause')
-                    # pause
-                elif WIDTH/4*3 <= mouse[0] <= WIDTH/4*4-20 and HEIGHT*9/10 <= mouse[1] <= HEIGHT-10:
-                    # teardown
+        # word
+        set_up = self.FONT.render('SET UP', True, self.WORD_COLOR) 
+        play = self.FONT.render('PLAY', True, self.WORD_COLOR)
+        pause = self.FONT.render('PAUSE', True, self.WORD_COLOR)
+        teardown = self.FONT.render('TEARDOWN', True, self.WORD_COLOR)
+        offset = self.WIDTH/50
+        self.WIN.blit(set_up, (offset, self.HEIGHT*9/10))
+        self.WIN.blit(play, (self.WIDTH/4*1+offset, self.HEIGHT*9/10))
+        self.WIN.blit(pause, (self.WIDTH/4*2+offset, self.HEIGHT*9/10))
+        self.WIN.blit(teardown, (self.WIDTH/4*3+offset/2, self.HEIGHT*9/10))
+        
+        pygame.display.update()
+        
+    def window_handler(self):
+        run = True
+        while run:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
                     run = False
-        update_window()
-    pygame.quit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse = pygame.mouse.get_pos()
+                    if 5 <= mouse[0] <= self.WIDTH/4*1-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
+                        print('set up')
+                        # set up
+                    elif self.WIDTH/4*1 <= mouse[0] <= self.WIDTH/4*2-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
+                        print('play')
+                        # play
+                    elif self.WIDTH/4*2 <= mouse[0] <= self.WIDTH/4*3-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
+                        print('pause')
+                        # pause
+                    elif self.WIDTH/4*3 <= mouse[0] <= self.WIDTH/4*4-20 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
+                        # teardown
+                        run = False
+            self.update_window()
+        pygame.quit()
     
 
 if __name__ == "__main__":
-    window_handler()
+    
+    test1 = PlayerWindow()
+    test1.window_handler()
+
+    '''
+    t_list = []
+
+    test1 = PlayerWindow()
+    t1 = threading.Thread(target = test1.window_handler)
+    t_list.append(t1)
+    test2 = PlayerWindow()
+    t2 = threading.Thread(target = test2.window_handler)
+    t_list.append(t2)
+
+    for t in t_list:
+        t.start()
+    for t in t_list:
+        t.join()
+    '''
