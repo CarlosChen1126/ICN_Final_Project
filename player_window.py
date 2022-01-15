@@ -1,6 +1,3 @@
-from ctypes.wintypes import WORD
-import sys
-from tkinter import OFF, W
 import pygame
 
 pygame.init()
