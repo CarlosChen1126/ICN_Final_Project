@@ -2,6 +2,7 @@ import socket
 import sys
 import cv2
 import base64
+from PIL import Image
 from RtpPacket import RtpPacket
 from serverworker import Serverworker
 
@@ -28,13 +29,15 @@ def image_decode(image, str):
 # TODO start
 HOST, PORT = sys.argv[1], int(sys.argv[2])
 # # TODO end
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server.bind((HOST, PORT))
-server.listen(1)
+# server.listen(1)
 while(True):
-    client, address = server.accept()
-    bytedata = image_encode("test2.png")
+    client, address = server.recvfrom(1024)
+    imgg = Image.open("test.jpg")
+    imgg.save("test_c.jpg", quality=1, subsampling=0)
+    bytedata = image_encode("test_c.jpg")
     serverworker = Serverworker()
     rtp = serverworker.createRTP(bytedata)
     print(len(rtp.getPayload()))
-    client.send(rtp.getPacket())
+    server.sendto(rtp.getPacket(), address)
