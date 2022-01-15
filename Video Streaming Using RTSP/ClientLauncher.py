@@ -11,6 +11,7 @@ if __name__ == "__main__":
 	signal.signal(signal.SIGINT,signal_handler)
 
 	try:
+		# 192.168.1.111 7080 5004 movie.Mjpeg
 		serverAddr = sys.argv[1]
 		serverPort = sys.argv[2]
 		rtpPort = sys.argv[3]
