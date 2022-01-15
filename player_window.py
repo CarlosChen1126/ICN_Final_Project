@@ -50,7 +50,7 @@ def update_window():
     WIN.blit(teardown, (WIDTH/4*3+OFFSET/2, HEIGHT*9/10))
     pygame.display.update()
     
-def main():
+def window_handler():
     run = True
     while run:
         for event in pygame.event.get():
@@ -75,4 +75,4 @@ def main():
     
 
 if __name__ == "__main__":
-    main()
+    window_handler()
