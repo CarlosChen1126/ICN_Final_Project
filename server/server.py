@@ -5,6 +5,7 @@ import base64
 from PIL import Image
 from serverworker import Serverworker
 from VideoStream import VideoStream
+import time
 
 
 def image_encode(image):
@@ -44,6 +45,8 @@ while(True):
         rtp = serverworker.createRTP(bytedata)
         print(len(rtp.getPayload()))
         server.sendto(rtp.getPacket(), address)
+        time.sleep(0.2)
+
     else:
         # 影片播完了
         server.sendto(b"", address)
