@@ -34,7 +34,7 @@ server.bind((HOST, PORT))
 # server.listen(1)
 while(True):
     client, address = server.recvfrom(1024)
-    imgg = Image.open("test.jpg")
+    imgg = Image.open("tex.jpg")
     imgg.save("test_c.jpg", quality=1, subsampling=0)
     bytedata = image_encode("test_c.jpg")
     serverworker = Serverworker()
