@@ -3,8 +3,8 @@ import sys
 import cv2
 import base64
 from PIL import Image
-from RtpPacket import RtpPacket
 from serverworker import Serverworker
+from VideoStream import VideoStream
 
 
 def image_encode(image):
@@ -32,12 +32,19 @@ HOST, PORT = sys.argv[1], int(sys.argv[2])
 server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server.bind((HOST, PORT))
 # server.listen(1)
+client, address = server.recvfrom(1024)
+video = VideoStream("./image/movie.Mjpeg")
 while(True):
-    client, address = server.recvfrom(1024)
-    imgg = Image.open("tex.jpg")
-    imgg.save("test_c.jpg", quality=1, subsampling=0)
-    bytedata = image_encode("test_c.jpg")
-    serverworker = Serverworker()
-    rtp = serverworker.createRTP(bytedata)
-    print(len(rtp.getPayload()))
-    server.sendto(rtp.getPacket(), address)
+    frame = video.nextFrame()
+    if frame:
+        # 影片還沒播完
+        # encode frame
+        bytedata = base64.encodebytes(frame)
+        serverworker = Serverworker()
+        rtp = serverworker.createRTP(bytedata)
+        print(len(rtp.getPayload()))
+        server.sendto(rtp.getPacket(), address)
+    else:
+        # 影片播完了
+        server.sendto(b"", address)
+        break
