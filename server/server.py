@@ -5,6 +5,7 @@ import base64
 from PIL import Image
 from serverworker import Serverworker
 from VideoStream import VideoStream
+import time
 
 
 def image_encode(image):
@@ -21,6 +22,7 @@ def image_decode(image, str):
     with open(image, "wb") as writeFile:
         img = base64.decodebytes(str)
         writeFile.write(img)
+
 
 # Specify the IP addr and port number
 # (use "127.0.0.1" for localhost on local machine)

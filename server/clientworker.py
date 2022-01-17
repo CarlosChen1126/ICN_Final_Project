@@ -68,7 +68,7 @@ class Clientworker:
                 break
             if cv2.waitKey(1) == ord('q'):
                 break
-        #刪除cache的檔案
+        # 刪除cache的檔案
         os.remove(cache_name)
         cv2.destroyAllWindows()
     def image_decode(self, image, str):
