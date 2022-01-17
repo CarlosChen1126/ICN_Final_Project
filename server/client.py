@@ -17,13 +17,13 @@ def temp_write(str):
         writeFile.write(img)
 
 
-HOST, PORT = sys.argv[1], int(sys.argv[2])
+HOST, PORT1, PORT2 = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
 print(HOST)
-print(PORT)
+print(PORT1)
 #HOST, PORT = "127.0.0.1", 8888
 #HOST, PORT = "140.112.42.108", 7777
 clientworker = Clientworker()
-clientworker.connectToServer(HOST, PORT)
+clientworker.connectToServer(HOST, PORT1, PORT2)
 clientworker.run()
 # client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # client.connect((HOST, PORT))
