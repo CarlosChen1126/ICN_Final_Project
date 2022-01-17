@@ -28,22 +28,39 @@ def image_decode(image, str):
 # TODO start
 HOST, PORT = sys.argv[1], int(sys.argv[2])
 # # TODO end
-server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server.bind((HOST, PORT))
-# server.listen(1)
-client, address = server.recvfrom(1024)
+rtspserver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+rtspserver.bind((HOST, PORT))
+rtspserver.listen(1)
+
+connect_socket,client_addr = rtspserver.accept()
+print(client_addr)
+
+while(True):
+    recevent = connect_socket.recv(1024)
+    recevent = str(recevent,encoding='utf-8')
+    print(recevent)
+    if (recevent == "SETUP"):
+        #收到SETUP就建立rtpserver
+        rtpserver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        rtpserver.bind((HOST, PORT + 1))
+    elif (recevent == "PLAY"):
+        break
+
+client, address = rtpserver.recvfrom(1024)
 video = VideoStream("./image/movie.Mjpeg")
+serverworker = Serverworker()
 while(True):
     frame = video.nextFrame()
+    cv2.waitKey(30)
     if frame :
         #影片還沒播完
         #encode frame
         bytedata = base64.encodebytes(frame)
-        serverworker = Serverworker()
         rtp = serverworker.createRTP(bytedata)
         print(len(rtp.getPayload()))
-        server.sendto(rtp.getPacket(), address)
+        rtpserver.sendto(rtp.getPacket(), address)
     else:
         #影片播完了
-        server.sendto(b"", address)
+        rtpserver.sendto(b"", address)
         break
+connect_socket.close()
