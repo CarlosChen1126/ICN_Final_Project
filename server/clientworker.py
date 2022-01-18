@@ -35,7 +35,7 @@ class Clientworker:
             self.state = "PLAY"
             self.rtspclient.send(bytes(requestCode, 'utf-8'))
             # receive rtp packet and display
-            threading.Thread(target=self.run).start()
+            self.run()
         elif(requestCode == "PAUSE"):
             self.state = "PAUSE"
             self.rtspclient.send(bytes(requestCode, 'utf-8'))
@@ -58,6 +58,7 @@ class Clientworker:
         self.rtpclient = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         address = self.serveraddr[0], self.serveraddr[1] + 1
         self.rtpclient.sendto(b'hi', address)
+        '''
         while(True):
             response = self.rtpclient.recv(65535)
             if response:
@@ -67,8 +68,8 @@ class Clientworker:
                 bytedata = rtp.getPayload()
                 cache_name = "test_res.jpg"
                 self.image_decode(cache_name, bytedata)
-                img = cv2.imread(cache_name)
-                cv2.imshow('My Image', img)
+                #img = cv2.imread(cache_name)
+                #cv2.imshow('My Image', img)
             else:
                 break
             if cv2.waitKey(1) == ord('q'):
@@ -76,6 +77,7 @@ class Clientworker:
         # 刪除cache的檔案
         os.remove(cache_name)
         cv2.destroyAllWindows()
+        '''
 
     def image_decode(self, image, str):
         with open(image, "wb") as writeFile:

@@ -2,6 +2,7 @@ from tkinter import SEL
 import pygame
 from clientworker import Clientworker
 import threading
+from RtpPacket import RtpPacket
 
 
 class PlayerWindow:
@@ -20,11 +21,11 @@ class PlayerWindow:
         pygame.display.set_caption("ICN final project")
 
         self.send_and_receive = Clientworker()
-        self.send_and_receive.connectToServer(
-            '127.0.0.1', 8888)  # address# & port#
+        self.send_and_receive.connectToServer('127.0.0.1', 1234) # address# & port#
 
     def update_window(self):
         self.WIN.fill(self.YELLOW_BACKGROUND)
+<<<<<<< HEAD
         '''
         # test image
         picture = pygame.image.load('tex.jpg')
@@ -36,6 +37,30 @@ class PlayerWindow:
         picture = pygame.transform.scale(
             picture, (self.WIDTH, self.HEIGHT*9/10))
         self.WIN.blit(picture, (0, 0))
+=======
+
+        if (self.send_and_receive.state =="PLAY"):
+            response = self.send_and_receive.rtpclient.recv(65535)
+            if response:
+                rtp = RtpPacket()
+                rtp.decode(response)
+                print(len(rtp.getPayload()))
+                bytedata = rtp.getPayload()
+                cache_name = "test_res.jpg"
+                self.send_and_receive.image_decode(cache_name, bytedata)
+            else:
+                #影片播完了
+                self.send_and_receive.state ="PAUSE"
+            picture = pygame.image.load('test_res.jpg')
+            #picture = pygame.transform.scale(picture, (self.WIDTH, self.HEIGHT*9/10))
+            self.WIN.blit(picture, (0,0))
+        elif (self.send_and_receive.state =="PAUSE"):
+            picture = pygame.image.load('test_res.jpg')
+            #picture = pygame.transform.scale(picture, (self.WIDTH, self.HEIGHT*9/10))
+            self.WIN.blit(picture, (0,0))
+
+
+>>>>>>> 12c8636db8bb515e0d707bb8001468f378239165
 
         # button & press
         mouse = pygame.mouse.get_pos()
@@ -101,9 +126,6 @@ class PlayerWindow:
                         self.send_and_receive.sendRtspRequest('TEARDOWN')
                         run = False
             self.update_window()
-            # TBmodified
-            threading.Thread(
-                target=self.send_and_receive.recvRtspResponse).start()
         pygame.quit()
 
 
