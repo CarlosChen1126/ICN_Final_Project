@@ -32,10 +32,11 @@ class Clientworker:
             # threading.Thread(target=self.recvRtspResponse).start()
             self.rtspclient.send(bytes(requestCode, 'utf-8'))
         elif(requestCode == "PLAY"):
-            self.state = "PLAY"
             self.rtspclient.send(bytes(requestCode, 'utf-8'))
             # receive rtp packet and display
-            self.run()
+            if (self.state == "SETUP"):
+                self.constructRTPclient()
+            self.state = "PLAY"
         elif(requestCode == "PAUSE"):
             self.state = "PAUSE"
             self.rtspclient.send(bytes(requestCode, 'utf-8'))
@@ -54,30 +55,10 @@ class Clientworker:
                 self.rtspclient.close()
                 break
 
-    def run(self):
+    def constructRTPclient(self):
         self.rtpclient = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         address = self.serveraddr[0], self.serveraddr[1] + 1
         self.rtpclient.sendto(b'hi', address)
-        '''
-        while(True):
-            response = self.rtpclient.recv(65535)
-            if response:
-                rtp = RtpPacket()
-                rtp.decode(response)
-                print(len(rtp.getPayload()))
-                bytedata = rtp.getPayload()
-                cache_name = "test_res.jpg"
-                self.image_decode(cache_name, bytedata)
-                #img = cv2.imread(cache_name)
-                #cv2.imshow('My Image', img)
-            else:
-                break
-            if cv2.waitKey(1) == ord('q'):
-                break
-        # 刪除cache的檔案
-        os.remove(cache_name)
-        cv2.destroyAllWindows()
-        '''
 
     def image_decode(self, image, str):
         with open(image, "wb") as writeFile:

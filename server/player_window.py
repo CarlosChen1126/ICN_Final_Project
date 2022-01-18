@@ -21,8 +21,7 @@ class PlayerWindow:
         pygame.display.set_caption("ICN final project")
 
         self.send_and_receive = Clientworker()
-        self.send_and_receive.connectToServer(
-            '127.0.0.1', 8888)  # address# & port#
+        self.send_and_receive.connectToServer('127.0.0.1', 8888)  # address# & port#
 
     def update_window(self):
         self.WIN.fill(self.YELLOW_BACKGROUND)

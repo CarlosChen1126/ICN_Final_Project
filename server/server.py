@@ -31,7 +31,7 @@ class Video(threading.Thread):
                 # encode frame
                 bytedata = base64.encodebytes(frame)
                 rtp = self.serverworker.createRTP(bytedata)
-                # print(len(rtp.getPayload()))
+                print(len(rtp.getPayload()))
                 self.rtpserver.sendto(rtp.getPacket(), self.address)
             else:
                 # 影片播完了
@@ -40,9 +40,11 @@ class Video(threading.Thread):
 
     def pause(self):
         self.flag.clear()
-
     def resume(self):
         self.flag.set()
+    def stop(self):
+        self.flag.set() 
+        self.running.clear() 
 
 
 def image_encode(image):
@@ -59,24 +61,6 @@ def image_decode(image, str):
     with open(image, "wb") as writeFile:
         img = base64.decodebytes(str)
         writeFile.write(img)
-
-
-# def playVideo(video, rtpserver):
-#     while(True):
-#         frame = video.nextFrame()
-#         cv2.waitKey(30)
-#         if frame:
-#             # 影片還沒播完
-#             # encode frame
-#             bytedata = base64.encodebytes(frame)
-#             rtp = serverworker.createRTP(bytedata)
-#             print(len(rtp.getPayload()))
-#             rtpserver.sendto(rtp.getPacket(), address)
-#         else:
-#             # 影片播完了
-#             rtpserver.sendto(b"", address)
-#             break
-
 
 # Specify the IP addr and port number
 # (use "127.0.0.1" for localhost on local machine)
@@ -103,24 +87,13 @@ while(True):
         rtpserver.bind((HOST, PORT + 1))
         client, address = rtpserver.recvfrom(1024)
         video = Video(videostream, rtpserver, serverworker, address)
-        video.run()
+        threading.Thread(target=video.run).start()
     elif (recevent == "PLAY"):
         print("play!")
         video.resume()
     elif(recevent == "PAUSE"):
         video.pause()
-        # while(True):
-        #     frame = video.nextFrame()
-        #     cv2.waitKey(30)
-        #     if frame :
-        #         #影片還沒播完
-        #         #encode frame
-        #         bytedata = base64.encodebytes(frame)
-        #         rtp = serverworker.createRTP(bytedata)
-        #         print(len(rtp.getPayload()))
-        #         rtpserver.sendto(rtp.getPacket(), address)
-        #     else:
-        #         #影片播完了
-        #         rtpserver.sendto(b"", address)
-        #         break
+    elif(recevent == "TEARDOWN"):
+        video.stop()
+        break
 connect_socket.close()
