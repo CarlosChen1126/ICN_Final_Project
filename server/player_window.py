@@ -1,4 +1,4 @@
-from tkinter import SEL
+import sys
 import pygame
 from clientworker import Clientworker
 import threading
@@ -6,7 +6,7 @@ from RtpPacket import RtpPacket
 
 
 class PlayerWindow:
-    def __init__(self):
+    def __init__(self, HOST, PORT):
         pygame.init()
         self.WIDTH, self.HEIGHT = 16*60, 10*60
         self.WIN = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
@@ -21,7 +21,7 @@ class PlayerWindow:
         pygame.display.set_caption("ICN final project")
 
         self.send_and_receive = Clientworker()
-        self.send_and_receive.connectToServer('127.0.0.1', 8888)  # address# & port#
+        self.send_and_receive.connectToServer(HOST,PORT)  # address# & port#  e.g.:'127.0.0.1', 8888
 
     def update_window(self):
         self.WIN.fill(self.YELLOW_BACKGROUND)
@@ -31,12 +31,12 @@ class PlayerWindow:
             if response:
                 rtp = RtpPacket()
                 rtp.decode(response)
-                print(len(rtp.getPayload()))
+                print('payload: ', len(rtp.getPayload()))
                 bytedata = rtp.getPayload()
                 cache_name = "test_res.jpg"
                 self.send_and_receive.image_decode(cache_name, bytedata)
             else:
-                # 影片播完了
+                # movie end
                 self.send_and_receive.state = "PAUSE"
             picture = pygame.image.load('test_res.jpg')
             #picture = pygame.transform.scale(picture, (self.WIDTH, self.HEIGHT*9/10))
@@ -89,8 +89,10 @@ class PlayerWindow:
 
         pygame.display.update()
 
-    def window_worker(self):
+    def window_handler(self):
         run = True
+        # TBmodified
+        threading.Thread(target = self.send_and_receive.recvRtspResponse).start()
         while run:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -114,5 +116,26 @@ class PlayerWindow:
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     test1 = PlayerWindow()
     test1.window_worker()
+=======
+    test1 = PlayerWindow(sys.argv[1], int(sys.argv[2]))
+    test1.window_handler()
+
+    '''
+    t_list = []
+
+    test1 = PlayerWindow()
+    t1 = threading.Thread(target = test1.window_handler)
+    t_list.append(t1)
+    test2 = PlayerWindow()
+    t2 = threading.Thread(target = test2.window_handler)
+    t_list.append(t2)
+
+    for t in t_list:
+        t.start()
+    for t in t_list:
+        t.join()
+    '''
+>>>>>>> d70517b20cd7285d32968144feaf7c37bdeae164
