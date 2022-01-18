@@ -70,6 +70,8 @@ class PlayerWindow:
         
     def window_worker(self):
         run = True
+        # TBmodified
+        threading.Thread(target = self.send_and_receive.recvRtspResponse).start()
         while run:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -89,8 +91,7 @@ class PlayerWindow:
                         self.send_and_receive.sendRtspRequest('TEARDOWN')
                         run = False
             self.update_window()
-            # TBmodified
-            threading.Thread(target = self.send_and_receive.recvRtspResponse).start()
+            
         pygame.quit()
     
 
