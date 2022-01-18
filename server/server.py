@@ -9,6 +9,42 @@ import time
 import threading
 
 
+class Video(threading.Thread):
+    def __init__(self, video, rtpserver, serverworker, address):
+        super(Video, self).__init__()
+        self.flag = threading.Event()
+        self.flag.set()
+        self.running = threading.Event()
+        self.running.set()
+        self.video = video
+        self.rtpserver = rtpserver
+        self.serverworker = serverworker
+        self.address = address
+
+    def run(self):
+        while self.running.isSet():
+            self.flag.wait()
+            frame = self.video.nextFrame()
+            cv2.waitKey(30)
+            if frame:
+                # 影片還沒播完
+                # encode frame
+                bytedata = base64.encodebytes(frame)
+                rtp = self.serverworker.createRTP(bytedata)
+                # print(len(rtp.getPayload()))
+                self.rtpserver.sendto(rtp.getPacket(), self.address)
+            else:
+                # 影片播完了
+                self.rtpserver.sendto(b"", self.address)
+                break
+
+    def pause(self):
+        self.flag.clear()
+
+    def resume(self):
+        self.flag.set()
+
+
 def image_encode(image):
     with open(image, "rb") as imageFile:
         str = base64.encodebytes(imageFile.read())
@@ -25,21 +61,21 @@ def image_decode(image, str):
         writeFile.write(img)
 
 
-def playVideo(video, rtpserver):
-    while(True):
-        frame = video.nextFrame()
-        cv2.waitKey(30)
-        if frame:
-            # 影片還沒播完
-            # encode frame
-            bytedata = base64.encodebytes(frame)
-            rtp = serverworker.createRTP(bytedata)
-            print(len(rtp.getPayload()))
-            rtpserver.sendto(rtp.getPacket(), address)
-        else:
-            # 影片播完了
-            rtpserver.sendto(b"", address)
-            break
+# def playVideo(video, rtpserver):
+#     while(True):
+#         frame = video.nextFrame()
+#         cv2.waitKey(30)
+#         if frame:
+#             # 影片還沒播完
+#             # encode frame
+#             bytedata = base64.encodebytes(frame)
+#             rtp = serverworker.createRTP(bytedata)
+#             print(len(rtp.getPayload()))
+#             rtpserver.sendto(rtp.getPacket(), address)
+#         else:
+#             # 影片播完了
+#             rtpserver.sendto(b"", address)
+#             break
 
 
 # Specify the IP addr and port number
@@ -54,22 +90,25 @@ rtspserver.listen(1)
 
 connect_socket, client_addr = rtspserver.accept()
 print(client_addr)
-video = VideoStream("./image/movie.Mjpeg")
+videostream = VideoStream("./image/movie.Mjpeg")
 serverworker = Serverworker()
 while(True):
     recevent = connect_socket.recv(1024)
     recevent = str(recevent, encoding='utf-8')
     print(recevent)
+    print("ii")
     if (recevent == "SETUP"):
         # 收到SETUP就建立rtpserver
         rtpserver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         rtpserver.bind((HOST, PORT + 1))
         client, address = rtpserver.recvfrom(1024)
+        video = Video(videostream, rtpserver, serverworker, address)
+        video.run()
     elif (recevent == "PLAY"):
-        threading.Thread(target=playVideo(video, rtpserver)).start()
+        print("play!")
+        video.resume()
     elif(recevent == "PAUSE"):
-        threading.Thread(target=playVideo(video, rtpserver)).sleep(10000)
-
+        video.pause()
         # while(True):
         #     frame = video.nextFrame()
         #     cv2.waitKey(30)
