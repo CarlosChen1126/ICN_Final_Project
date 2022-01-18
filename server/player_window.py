@@ -17,8 +17,8 @@ class PlayerWindow:
 
         pygame.display.set_caption("ICN final project")
 
-        self.send_request = Clientworker()
-        self.send_request.connectToServer('192.168.1.111', 7080) # address# & port#
+        self.send_and_receive = Clientworker()
+        self.send_and_receive.connectToServer('192.168.1.111', 7080) # address# & port#
 
     def update_window(self):
         self.WIN.fill(self.YELLOW_BACKGROUND)
@@ -28,6 +28,11 @@ class PlayerWindow:
         picture = pygame.transform.scale(picture, (self.WIDTH, self.HEIGHT*9/10))
         self.WIN.blit(picture, (0,0))
         '''
+
+        picture = pygame.image.load('test_res.jpg')
+        picture = pygame.transform.scale(picture, (self.WIDTH, self.HEIGHT*9/10))
+        self.WIN.blit(picture, (0,0))
+
         # button & press
         mouse = pygame.mouse.get_pos()      
         if 5 <= mouse[0] <= self.WIDTH/4*1-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
@@ -73,17 +78,19 @@ class PlayerWindow:
                     mouse = pygame.mouse.get_pos()
                     if 5 <= mouse[0] <= self.WIDTH/4*1-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
                         print('set up')
-                        self.send_request.sendRtspRequest('SETUP')                    
+                        self.send_and_receive.sendRtspRequest('SETUP')                    
                     elif self.WIDTH/4*1 <= mouse[0] <= self.WIDTH/4*2-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
                         print('play')
-                        self.send_request.sendRtspRequest('PLAY')
+                        self.send_and_receive.sendRtspRequest('PLAY')
                     elif self.WIDTH/4*2 <= mouse[0] <= self.WIDTH/4*3-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
                         print('pause')
-                        self.send_request.sendRtspRequest('PAUSE')
+                        self.send_and_receive.sendRtspRequest('PAUSE')
                     elif self.WIDTH/4*3 <= mouse[0] <= self.WIDTH/4*4-20 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
-                        self.send_request.sendRtspRequest('TEARDOWN')
+                        self.send_and_receive.sendRtspRequest('TEARDOWN')
                         run = False
             self.update_window()
+            # TBmodified
+            threading.Thread(target = self.send_and_receive.recvRtspResponse).start()
         pygame.quit()
     
 
