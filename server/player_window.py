@@ -21,7 +21,8 @@ class PlayerWindow:
         pygame.display.set_caption("ICN final project")
 
         self.send_and_receive = Clientworker()
-        self.send_and_receive.connectToServer(HOST,PORT)  # address# & port#  e.g.:'127.0.0.1', 8888
+        # address# & port#  e.g.:'127.0.0.1', 8888
+        self.send_and_receive.connectToServer(HOST, PORT)
 
     def update_window(self):
         self.WIN.fill(self.YELLOW_BACKGROUND)
@@ -92,7 +93,7 @@ class PlayerWindow:
     def window_handler(self):
         run = True
         # TBmodified
-        threading.Thread(target = self.send_and_receive.recvRtspResponse).start()
+        threading.Thread(target=self.send_and_receive.recvRtspResponse).start()
         while run:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -116,10 +117,6 @@ class PlayerWindow:
 
 
 if __name__ == "__main__":
-<<<<<<< HEAD
-    test1 = PlayerWindow()
-    test1.window_worker()
-=======
     test1 = PlayerWindow(sys.argv[1], int(sys.argv[2]))
     test1.window_handler()
 
@@ -138,4 +135,3 @@ if __name__ == "__main__":
     for t in t_list:
         t.join()
     '''
->>>>>>> d70517b20cd7285d32968144feaf7c37bdeae164
