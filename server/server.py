@@ -2,48 +2,48 @@ import socket
 import sys
 import cv2
 import base64
-from serverworker import Serverworker
+from serverworker import Serverworker, Video
 from VideoStream import VideoStream
 import threading
 
 
-class Video(threading.Thread):
-    def __init__(self, video, rtpserver, serverworker, address):
-        super(Video, self).__init__()
-        self.flag = threading.Event()
-        self.flag.clear()
-        self.running = threading.Event()
-        self.running.set()
-        self.video = video
-        self.rtpserver = rtpserver
-        self.serverworker = serverworker
-        self.address = address
+# class Video(threading.Thread):
+#     def __init__(self, video, rtpserver, serverworker, address):
+#         super(Video, self).__init__()
+#         self.flag = threading.Event()
+#         self.flag.clear()
+#         self.running = threading.Event()
+#         self.running.set()
+#         self.video = video
+#         self.rtpserver = rtpserver
+#         self.serverworker = serverworker
+#         self.address = address
 
-    def run(self):
-        while self.running.isSet():
-            self.flag.wait()
-            frame = self.video.nextFrame()
-            cv2.waitKey(30)
-            if frame:
-                # 影片還沒播完
-                # encode frame
-                bytedata = base64.encodebytes(frame)
-                rtp = self.serverworker.createRTP(self.video.frameNbr(), bytedata)
-                print(len(rtp.getPayload()))
-                self.rtpserver.sendto(rtp.getPacket(), self.address)
-            else:
-                # 影片播完了
-                self.rtpserver.sendto(b"", self.address)
-                self.flag.clear()
-                break
+#     def run(self):
+#         while self.running.isSet():
+#             self.flag.wait()
+#             frame = self.video.nextFrame()
+#             cv2.waitKey(30)
+#             if frame:
+#                 # 影片還沒播完
+#                 # encode frame
+#                 bytedata = base64.encodebytes(frame)
+#                 rtp = self.serverworker.createRTP(self.video.frameNbr(), bytedata)
+#                 print(len(rtp.getPayload()))
+#                 self.rtpserver.sendto(rtp.getPacket(), self.address)
+#             else:
+#                 # 影片播完了
+#                 self.rtpserver.sendto(b"", self.address)
+#                 self.flag.clear()
+#                 break
 
-    def pause(self):
-        self.flag.clear()
-    def resume(self):
-        self.flag.set()
-    def stop(self):
-        self.flag.set() 
-        self.running.clear() 
+#     def pause(self):
+#         self.flag.clear()
+#     def resume(self):
+#         self.flag.set()
+#     def stop(self):
+#         self.flag.set() 
+#         self.running.clear() 
 
 # Specify the IP addr and port number
 # (use "127.0.0.1" for localhost on local machine)
