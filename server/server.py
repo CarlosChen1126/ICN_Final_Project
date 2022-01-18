@@ -2,10 +2,8 @@ import socket
 import sys
 import cv2
 import base64
-from PIL import Image
 from serverworker import Serverworker
 from VideoStream import VideoStream
-import time
 import threading
 
 
@@ -13,7 +11,7 @@ class Video(threading.Thread):
     def __init__(self, video, rtpserver, serverworker, address):
         super(Video, self).__init__()
         self.flag = threading.Event()
-        self.flag.set()
+        self.flag.clear()
         self.running = threading.Event()
         self.running.set()
         self.video = video
@@ -30,12 +28,13 @@ class Video(threading.Thread):
                 # 影片還沒播完
                 # encode frame
                 bytedata = base64.encodebytes(frame)
-                rtp = self.serverworker.createRTP(bytedata)
+                rtp = self.serverworker.createRTP(self.video.frameNbr(), bytedata)
                 print(len(rtp.getPayload()))
                 self.rtpserver.sendto(rtp.getPacket(), self.address)
             else:
                 # 影片播完了
                 self.rtpserver.sendto(b"", self.address)
+                self.flag.clear()
                 break
 
     def pause(self):
@@ -46,54 +45,44 @@ class Video(threading.Thread):
         self.flag.set() 
         self.running.clear() 
 
-
-def image_encode(image):
-    with open(image, "rb") as imageFile:
-        str = base64.encodebytes(imageFile.read())
-        print(str)
-    return str
-
-    #     img = base64.decodebytes(str)
-    #     writeFile.write(img)
-
-
-def image_decode(image, str):
-    with open(image, "wb") as writeFile:
-        img = base64.decodebytes(str)
-        writeFile.write(img)
-
 # Specify the IP addr and port number
 # (use "127.0.0.1" for localhost on local machine)
 # Create a socket and bind the socket to the addr
-# TODO start
 HOST, PORT = sys.argv[1], int(sys.argv[2])
-# # TODO end
+
 rtspserver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 rtspserver.bind((HOST, PORT))
 rtspserver.listen(1)
+rtpserver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+rtpserver.bind((HOST, PORT + 1))
 
 connect_socket, client_addr = rtspserver.accept()
 print(client_addr)
-videostream = VideoStream("./image/movie.Mjpeg")
 serverworker = Serverworker()
 while(True):
-    recevent = connect_socket.recv(1024)
-    recevent = str(recevent, encoding='utf-8')
-    print(recevent)
-    print("ii")
-    if (recevent == "SETUP"):
-        # 收到SETUP就建立rtpserver
-        rtpserver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        rtpserver.bind((HOST, PORT + 1))
+    data = str(connect_socket.recv(1024), encoding='utf-8')
+    print(data)
+    # Get the request type
+    request = data.split('\n')
+    line1 = request[0].split(' ')
+    requestType = line1[1]
+
+    # Get the media file name
+    filename = line1[2]
+
+    # Get the RTSP sequence number
+    seqnum = request[1].split(' ')[1]
+    if (requestType == "SETUP"):
+        # 收到SETUP就建立video
+        videostream = VideoStream(filename)
         client, address = rtpserver.recvfrom(1024)
         video = Video(videostream, rtpserver, serverworker, address)
         threading.Thread(target=video.run).start()
-    elif (recevent == "PLAY"):
-        print("play!")
+    elif (requestType == "PLAY"):
         video.resume()
-    elif(recevent == "PAUSE"):
+    elif(requestType == "PAUSE"):
         video.pause()
-    elif(recevent == "TEARDOWN"):
+    elif(requestType == "TEARDOWN"):
         video.stop()
         break
 connect_socket.close()

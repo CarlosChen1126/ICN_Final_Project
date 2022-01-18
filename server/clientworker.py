@@ -1,9 +1,5 @@
 import base64
-from RtpPacket import RtpPacket
 import socket
-import threading
-import cv2
-import os
 
 
 class Clientworker:
@@ -11,9 +7,12 @@ class Clientworker:
     TRANSPORT = "RTP/UDP"
 
     def __init__(self):
-        self.rtspSeq = 0  # rtsp request's sequence number
-        self.state = "INIT"  # have four state : INIT SETUP PLAY PAUSE
+        self.rtspSeq = 0        # rtsp request's sequence number
+        self.state = "INIT"     # have four state : INIT SETUP PLAY PAUSE
         self.serveraddr = 0
+        self.fileName = "./image/movie.Mjpeg"
+        self.rtpPort = 10
+        self.sessionId = 0
 
     def connectToServer(self, address, port):
         # rtsp client using tcp
@@ -27,22 +26,44 @@ class Clientworker:
     def sendRtspRequest(self, requestCode):
         # Send RTSP request to the server
         self.rtspSeq += 1
-        if(requestCode == "SETUP"):
+        if(requestCode == "SETUP" and self.state == "INIT"):
             self.state = "SETUP"
             # threading.Thread(target=self.recvRtspResponse).start()
-            self.rtspclient.send(bytes(requestCode, 'utf-8'))
+
+            # Write the RTSP request to be sent.
+            request = "Request: %s %s %s" % (requestCode,self.fileName,self.RTSP_VER)
+            request+="\nTransport: %s; client_port= %d" % (self.TRANSPORT,self.rtpPort)
+            request+="\nCSeq: %d" % self.rtspSeq
+
+            self.rtspclient.send(bytes(request, 'utf-8'))
+            self.constructRTPclient()
         elif(requestCode == "PLAY"):
-            self.rtspclient.send(bytes(requestCode, 'utf-8'))
-            # receive rtp packet and display
-            if (self.state == "SETUP"):
-                self.constructRTPclient()
             self.state = "PLAY"
+
+            # Write the RTSP request to be sent.
+            request = "Request: %s %s %s" % (requestCode,self.fileName,self.RTSP_VER)
+            request+="\nCSeq: %d" % self.rtspSeq
+            request+="\nSession: %d"%self.sessionId
+
+            self.rtspclient.send(bytes(request, 'utf-8'))
         elif(requestCode == "PAUSE"):
             self.state = "PAUSE"
-            self.rtspclient.send(bytes(requestCode, 'utf-8'))
+
+            # Write the RTSP request to be sent.
+            request = "Request: %s %s %s" % (requestCode,self.fileName,self.RTSP_VER)
+            request+="\nCSeq: %d" % self.rtspSeq
+            request+="\nSession: %d"%self.sessionId
+
+            self.rtspclient.send(bytes(request, 'utf-8'))
         elif(requestCode == "TEARDOWN"):
             self.state = "INIT"
-            self.rtspclient.send(bytes(requestCode, 'utf-8'))
+
+            # Write the RTSP request to be sent.
+            request = "Request: %s %s %s" % (requestCode,self.fileName,self.RTSP_VER)
+            request+="\nCSeq: %d" % self.rtspSeq
+            request+="\nSession: %d"%self.sessionId
+
+            self.rtspclient.send(bytes(request, 'utf-8'))
 
     def recvRtspResponse(self):
         # Receive RTSP response from the server

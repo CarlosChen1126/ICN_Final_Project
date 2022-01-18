@@ -116,19 +116,3 @@ class PlayerWindow:
 if __name__ == "__main__":
     test1 = PlayerWindow()
     test1.window_worker()
-
-    '''
-    t_list = []
-
-    test1 = PlayerWindow()
-    t1 = threading.Thread(target = test1.window_handler)
-    t_list.append(t1)
-    test2 = PlayerWindow()
-    t2 = threading.Thread(target = test2.window_handler)
-    t_list.append(t2)
-
-    for t in t_list:
-        t.start()
-    for t in t_list:
-        t.join()
-    '''

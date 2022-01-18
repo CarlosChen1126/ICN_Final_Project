@@ -15,7 +15,7 @@ class Serverworker:
         RTPserver.listen(0)
         RTSPserver.bind((address, port2))
 
-    def createRTP(self, bytedata):
+    def createRTP(self, frameNbr, bytedata):
         #encode(self, Ver, P, X, CC, M, PT, SeqNum, SSI, CI, payload)
         version = 2
         padding = 0
@@ -23,7 +23,7 @@ class Serverworker:
         cc = 0
         marker = 0
         pt = 26  # MJPEG type
-        seqnum = 0
+        seqnum = frameNbr
         ssrc = 0
         ci = 0
 
