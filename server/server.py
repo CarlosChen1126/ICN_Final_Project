@@ -67,19 +67,21 @@ while(True):
         client, address = rtpserver.recvfrom(1024)
     elif (recevent == "PLAY"):
         threading.Thread(target=playVideo(video, rtpserver)).start()
+    elif(recevent == "PAUSE"):
+        threading.Thread(target=playVideo(video, rtpserver)).sleep(10000)
 
-# while(True):
-#     frame = video.nextFrame()
-#     cv2.waitKey(30)
-#     if frame :
-#         #影片還沒播完
-#         #encode frame
-#         bytedata = base64.encodebytes(frame)
-#         rtp = serverworker.createRTP(bytedata)
-#         print(len(rtp.getPayload()))
-#         rtpserver.sendto(rtp.getPacket(), address)
-#     else:
-#         #影片播完了
-#         rtpserver.sendto(b"", address)
-#         break
+        # while(True):
+        #     frame = video.nextFrame()
+        #     cv2.waitKey(30)
+        #     if frame :
+        #         #影片還沒播完
+        #         #encode frame
+        #         bytedata = base64.encodebytes(frame)
+        #         rtp = serverworker.createRTP(bytedata)
+        #         print(len(rtp.getPayload()))
+        #         rtpserver.sendto(rtp.getPacket(), address)
+        #     else:
+        #         #影片播完了
+        #         rtpserver.sendto(b"", address)
+        #         break
 connect_socket.close()

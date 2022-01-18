@@ -32,7 +32,7 @@ class PlayerWindow:
         self.WIN.blit(picture, (0,0))
         '''
 
-        picture = pygame.image.load('test_res.jpg')
+        picture = pygame.image.load('tex.jpg')
         picture = pygame.transform.scale(
             picture, (self.WIDTH, self.HEIGHT*9/10))
         self.WIN.blit(picture, (0, 0))
