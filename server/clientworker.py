@@ -6,11 +6,11 @@ class Clientworker:
     RTSP_VER = "RTSP/1.0"
     TRANSPORT = "RTP/UDP"
 
-    def __init__(self):
+    def __init__(self, input_file):
         self.rtspSeq = 0        # rtsp request's sequence number
         self.state = "INIT"     # have four state : INIT SETUP PLAY PAUSE
         self.serveraddr = 0
-        self.fileName = "./image/movie.Mjpeg"
+        self.fileName = "./image/"+input_file
         self.rtpPort = 10
         self.sessionId = 0
 

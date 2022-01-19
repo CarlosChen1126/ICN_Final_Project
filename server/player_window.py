@@ -7,7 +7,7 @@ from RtpPacket import RtpPacket
 
 
 class PlayerWindow:
-    def __init__(self, HOST, PORT):
+    def __init__(self, HOST, PORT, input_file):
         pygame.init()
         self.WIDTH, self.HEIGHT = 16*60, 12*60
         self.WIN = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
@@ -17,11 +17,11 @@ class PlayerWindow:
         self.BUTTON_PRESSED_COLOR = (3, 54, 73)
         self.WORD_COLOR = (205, 179, 128)
         self.FONT = pygame.font.SysFont(
-            'Segoe UI Black', int(self.WIDTH/20), False, False)
+            'Segoe UI Black', int(self.WIDTH/25), False, False)
 
         pygame.display.set_caption("ICN final project")
 
-        self.send_and_receive = Clientworker()
+        self.send_and_receive = Clientworker(input_file)
         # address# & port#  e.g.:'127.0.0.1', 8888
         self.send_and_receive.connectToServer(HOST, PORT)
         self.send_and_receive.sendRtspRequest('SETUP')
@@ -125,7 +125,8 @@ class PlayerWindow:
 
 
 if __name__ == "__main__":
-    test1 = PlayerWindow(sys.argv[1], int(sys.argv[2]))
+    input_file = input('Which video would you like to watch?')
+    test1 = PlayerWindow(sys.argv[1], int(sys.argv[2]), input_file)
     test1.window_handler()
 
     '''
