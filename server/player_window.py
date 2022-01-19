@@ -115,7 +115,7 @@ class PlayerWindow:
                     #聲音還沒播完
                     rtp = RtpPacket()
                     rtp.decode(audio)
-                    print('payload: ', len(rtp.getPayload()))
+                    #print('payload: ', len(rtp.getPayload()))
                     bytedata = rtp.getPayload()
                     self.stream.write(bytedata)
                 else:
@@ -128,7 +128,6 @@ class PlayerWindow:
                 break
     def window_handler(self):
         run = True
-        threading.Thread(target=self.send_and_receive.recvRtspResponse).start()
         while run:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

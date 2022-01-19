@@ -3,6 +3,7 @@ import socket
 import threading
 import cv2
 import base64
+import wave
 
 
 class Serverworker:
@@ -77,8 +78,6 @@ class Video(threading.Thread):
         self.flag.set()
         self.running.clear()
 
-import wave
-
 class Audio(threading.Thread):
     chunk = 1024
 
@@ -94,13 +93,6 @@ class Audio(threading.Thread):
         self.address = address
         self.frameNbr = 0
 
-    def play(self):
-        """ Play entire file """
-        data = self.wf.readframes(self.chunk)
-        while data != '':
-            self.stream.write(data)
-            data = self.wf.readframes(self.chunk)
-
     def run(self):
         while self.running.isSet():
             self.flag.wait()
@@ -108,15 +100,14 @@ class Audio(threading.Thread):
             cv2.waitKey(120)
             self.frameNbr += 1
             if frame:
-                # 影片還沒播完
+                # 聲音還沒播完
                 # encode frame
                 rtp = self.serverworker.createRTP(
                     self.frameNbr, frame)
-                print(len(rtp.getPayload()))
+                #print(len(rtp.getPayload()))
                 self.rtpserver.sendto(rtp.getPacket(), self.address)
             else:
-                # 影片播完了
-                print(123)
+                # 聲音播完了
                 self.rtpserver.sendto(b"", self.address)
                 self.flag.clear()
                 break
