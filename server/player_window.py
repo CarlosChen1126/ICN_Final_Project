@@ -1,8 +1,6 @@
-from cmath import pi
 import sys
 import pygame
 from clientworker import Clientworker
-import threading
 from RtpPacket import RtpPacket
 
 
@@ -30,39 +28,39 @@ class PlayerWindow:
         self.WIN.fill(self.YELLOW_BACKGROUND)
 
         if (self.send_and_receive.state == "PLAY"):
-            response = self.send_and_receive.rtpclient.recv(65535)
+            response = self.send_and_receive.rtpclient_video.recv(65535)
             if response:
                 rtp = RtpPacket()
                 rtp.decode(response)
-                print('payload: ', len(rtp.getPayload()))
+                #print('payload: ', len(rtp.getPayload()))
                 bytedata = rtp.getPayload()
                 cache_name = "test_res.jpg"
                 self.send_and_receive.image_decode(cache_name, bytedata)
             else:
                 # movie end
-                self.send_and_receive.state = "PAUSE"
+                self.send_and_receive.state = "OFF"
 
             picture = pygame.image.load('test_res.jpg')
             image_rect = picture.get_rect(center=self.WIN.get_rect().center)
             width = image_rect.right - image_rect.left
             height = image_rect.bottom - image_rect.top
             if (width*self.HEIGHT <= height*self.WIDTH):
-                picture = pygame.transform.scale(picture, (self.HEIGHT*9/10*width/height, self.HEIGHT*9/10))
+                picture = pygame.transform.scale(picture, (int(self.HEIGHT*9/10*width/height), int(self.HEIGHT*9/10)))
                 self.WIN.blit(picture, ((self.WIDTH - self.HEIGHT*9/10*width/height)/2,0))
             else:
-                picture = pygame.transform.scale(picture, (self.WIDTH, self.WIDTH/width*height))
+                picture = pygame.transform.scale(picture, (int(self.WIDTH), int(self.WIDTH/width*height)))
                 self.WIN.blit(picture, (0,0))
 
-        elif (self.send_and_receive.state == "PAUSE"):
+        elif (self.send_and_receive.state == "PAUSE" or self.send_and_receive.state == "OFF"):
             picture = pygame.image.load('test_res.jpg')
             image_rect = picture.get_rect(center=self.WIN.get_rect().center)
             width = image_rect.right - image_rect.left
             height = image_rect.bottom - image_rect.top
             if (width*self.HEIGHT <= height*self.WIDTH):
-                picture = pygame.transform.scale(picture, (self.HEIGHT*9/10*width/height, self.HEIGHT*9/10))
+                picture = pygame.transform.scale(picture, (int(self.HEIGHT*9/10*width/height), int(self.HEIGHT*9/10)))
                 self.WIN.blit(picture, ((self.WIDTH - self.HEIGHT*9/10*width/height)/2,0))
             else:
-                picture = pygame.transform.scale(picture, (self.WIDTH, self.WIDTH/width*height))
+                picture = pygame.transform.scale(picture, (int(self.WIDTH), int(self.WIDTH/width*height)))
                 self.WIN.blit(picture, (0,0))
 
         # button & press
@@ -100,7 +98,6 @@ class PlayerWindow:
 
     def window_handler(self):
         run = True
-        threading.Thread(target=self.send_and_receive.recvRtspResponse).start()
         while run:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -126,21 +123,6 @@ class PlayerWindow:
 
 if __name__ == "__main__":
     input_file = input('Which video would you like to watch?')
-    test1 = PlayerWindow(sys.argv[1], int(sys.argv[2]), input_file)
+    HOST, PORT = sys.argv[1], int(sys.argv[2])
+    test1 = PlayerWindow(HOST, PORT, input_file)
     test1.window_handler()
-
-    '''
-    t_list = []
-
-    test1 = PlayerWindow()
-    t1 = threading.Thread(target = test1.window_handler)
-    t_list.append(t1)
-    test2 = PlayerWindow()
-    t2 = threading.Thread(target = test2.window_handler)
-    t_list.append(t2)
-
-    for t in t_list:
-        t.start()
-    for t in t_list:
-        t.join()
-    '''

@@ -3,6 +3,7 @@ import socket
 import threading
 import cv2
 import base64
+import wave
 
 
 class Serverworker:
@@ -59,10 +60,54 @@ class Video(threading.Thread):
                 bytedata = base64.encodebytes(frame)
                 rtp = self.serverworker.createRTP(
                     self.video.frameNbr(), bytedata)
-                print(len(rtp.getPayload()))
+                #print(len(rtp.getPayload()))
                 self.rtpserver.sendto(rtp.getPacket(), self.address)
             else:
                 # 影片播完了
+                self.rtpserver.sendto(b"", self.address)
+                self.flag.clear()
+                break
+
+    def pause(self):
+        self.flag.clear()
+
+    def resume(self):
+        self.flag.set()
+
+    def stop(self):
+        self.flag.set()
+        self.running.clear()
+
+class Audio(threading.Thread):
+    chunk = 1024
+
+    def __init__(self, wf, rtpserver, serverworker, address):
+        """ Init audio stream """ 
+        self.wf = wf
+        self.flag = threading.Event()
+        self.flag.clear()
+        self.running = threading.Event()
+        self.running.set()
+        self.rtpserver = rtpserver
+        self.serverworker = serverworker
+        self.address = address
+        self.frameNbr = 0
+
+    def run(self):
+        while self.running.isSet():
+            self.flag.wait()
+            frame = self.wf.readframes(self.chunk)
+            cv2.waitKey(120)
+            self.frameNbr += 1
+            if frame:
+                # 聲音還沒播完
+                # encode frame
+                rtp = self.serverworker.createRTP(
+                    self.frameNbr, frame)
+                #print(len(rtp.getPayload()))
+                self.rtpserver.sendto(rtp.getPacket(), self.address)
+            else:
+                # 聲音播完了
                 self.rtpserver.sendto(b"", self.address)
                 self.flag.clear()
                 break
