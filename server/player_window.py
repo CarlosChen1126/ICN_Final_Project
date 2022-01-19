@@ -42,11 +42,13 @@ class PlayerWindow:
                 self.send_and_receive.state = "PAUSE"
             picture = pygame.image.load('test_res.jpg')
             #picture = pygame.transform.scale(picture, (self.WIDTH, self.HEIGHT*9/10))
-            self.WIN.blit(picture, (0, 0))
+            image_rect = picture.get_rect(center=self.WIN.get_rect().center)
+            self.WIN.blit(picture, image_rect)
         elif (self.send_and_receive.state == "PAUSE"):
             picture = pygame.image.load('test_res.jpg')
-            #picture = pygame.transform.scale(picture, (self.WIDTH, self.HEIGHT*9/10))
-            self.WIN.blit(picture, (0, 0))
+            picture = pygame.transform.scale(picture, (self.WIDTH, self.HEIGHT*9/10))
+            image_rect = picture.get_rect(center=self.WIN.get_rect().center)
+            self.WIN.blit(picture, image_rect)
 
         # button & press
         mouse = pygame.mouse.get_pos()
