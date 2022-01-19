@@ -2,6 +2,7 @@ import base64
 import socket
 import threading
 
+
 class Clientworker:
     RTSP_VER = "RTSP/1.0"
     TRANSPORT = "RTP/UDP"
@@ -10,7 +11,7 @@ class Clientworker:
         self.rtspSeq = 0        # rtsp request's sequence number
         self.state = "INIT"     # have four state : INIT SETUP PLAY PAUSE
         self.serveraddr = 0
-        self.fileName = "./image/tt.mjpg"
+        self.fileName = "./image/t1.mjpeg"
         self.rtpPort = 10
         self.sessionId = 0
         self.requestSent = 0
@@ -93,7 +94,6 @@ class Clientworker:
                     self.rtspclient.shutdown(socket.SHUT_RDWR)
                     self.rtspclient.close()
                     break
-            
 
     def constructRTPclient(self):
         # handle video transmission
