@@ -10,7 +10,7 @@ class Clientworker:
         self.rtspSeq = 0        # rtsp request's sequence number
         self.state = "INIT"     # have four state : INIT SETUP PLAY PAUSE
         self.serveraddr = 0
-        self.fileName = "./image/movie.Mjpeg"
+        self.fileName = "./image/t.Mjpeg"
         self.rtpPort = 10
         self.sessionId = 0
 
@@ -31,9 +31,11 @@ class Clientworker:
             # threading.Thread(target=self.recvRtspResponse).start()
 
             # Write the RTSP request to be sent.
-            request = "Request: %s %s %s" % (requestCode,self.fileName,self.RTSP_VER)
-            request+="\nTransport: %s; client_port= %d" % (self.TRANSPORT,self.rtpPort)
-            request+="\nCSeq: %d" % self.rtspSeq
+            request = "Request: %s %s %s" % (
+                requestCode, self.fileName, self.RTSP_VER)
+            request += "\nTransport: %s; client_port= %d" % (
+                self.TRANSPORT, self.rtpPort)
+            request += "\nCSeq: %d" % self.rtspSeq
 
             self.rtspclient.send(bytes(request, 'utf-8'))
             self.constructRTPclient()
@@ -41,27 +43,30 @@ class Clientworker:
             self.state = "PLAY"
 
             # Write the RTSP request to be sent.
-            request = "Request: %s %s %s" % (requestCode,self.fileName,self.RTSP_VER)
-            request+="\nCSeq: %d" % self.rtspSeq
-            request+="\nSession: %d"%self.sessionId
+            request = "Request: %s %s %s" % (
+                requestCode, self.fileName, self.RTSP_VER)
+            request += "\nCSeq: %d" % self.rtspSeq
+            request += "\nSession: %d" % self.sessionId
 
             self.rtspclient.send(bytes(request, 'utf-8'))
         elif(requestCode == "PAUSE"):
             self.state = "PAUSE"
 
             # Write the RTSP request to be sent.
-            request = "Request: %s %s %s" % (requestCode,self.fileName,self.RTSP_VER)
-            request+="\nCSeq: %d" % self.rtspSeq
-            request+="\nSession: %d"%self.sessionId
+            request = "Request: %s %s %s" % (
+                requestCode, self.fileName, self.RTSP_VER)
+            request += "\nCSeq: %d" % self.rtspSeq
+            request += "\nSession: %d" % self.sessionId
 
             self.rtspclient.send(bytes(request, 'utf-8'))
         elif(requestCode == "TEARDOWN"):
             self.state = "INIT"
 
             # Write the RTSP request to be sent.
-            request = "Request: %s %s %s" % (requestCode,self.fileName,self.RTSP_VER)
-            request+="\nCSeq: %d" % self.rtspSeq
-            request+="\nSession: %d"%self.sessionId
+            request = "Request: %s %s %s" % (
+                requestCode, self.fileName, self.RTSP_VER)
+            request += "\nCSeq: %d" % self.rtspSeq
+            request += "\nSession: %d" % self.sessionId
 
             self.rtspclient.send(bytes(request, 'utf-8'))
 
