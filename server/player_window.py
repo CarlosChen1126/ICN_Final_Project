@@ -74,7 +74,7 @@ class PlayerWindow:
                              self.WIDTH/4*3, self.HEIGHT*9/10, self.WIDTH/4-20, self.HEIGHT/10])
         else:
             pygame.draw.rect(self.WIN, self.BUTTON_COLOR, [
-                             self.WIDTH/4*3, self.HEIGHT*9/10, self.WIDTH/4-20, self.HEIGHT/10])
+                            self.WIDTH/4*3, self.HEIGHT*9/10, self.WIDTH/4-20, self.HEIGHT/10])
 
         # word
         set_up = self.FONT.render('SET UP', True, self.WORD_COLOR)
@@ -116,26 +116,6 @@ class PlayerWindow:
 
 
 if __name__ == "__main__":
-<<<<<<< HEAD
-    test1 = PlayerWindow()
-    test1.window_worker()
-=======
-    test1 = PlayerWindow(sys.argv[1], int(sys.argv[2]))
+    HOST, PORT = sys.argv[1], int(sys.argv[2])
+    test1 = PlayerWindow(HOST, PORT)
     test1.window_handler()
-
-    '''
-    t_list = []
-
-    test1 = PlayerWindow()
-    t1 = threading.Thread(target = test1.window_handler)
-    t_list.append(t1)
-    test2 = PlayerWindow()
-    t2 = threading.Thread(target = test2.window_handler)
-    t_list.append(t2)
-
-    for t in t_list:
-        t.start()
-    for t in t_list:
-        t.join()
-    '''
->>>>>>> d70517b20cd7285d32968144feaf7c37bdeae164
