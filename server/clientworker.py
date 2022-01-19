@@ -10,7 +10,7 @@ class Clientworker:
         self.rtspSeq = 0        # rtsp request's sequence number
         self.state = "INIT"     # have four state : INIT SETUP PLAY PAUSE
         self.serveraddr = 0
-        self.fileName = "./image/movie.Mjpeg"
+        self.fileName = "./image/tt.mjpg"
         self.rtpPort = 10
         self.sessionId = 0
 

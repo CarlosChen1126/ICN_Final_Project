@@ -2,7 +2,7 @@ class VideoStream:
     def __init__(self, filename):
         self.filename = filename
         try:
-            self.file = open(filename, 'r')
+            self.file = open(filename, 'rb')
         except:
             raise IOError
         self.frameNum = 0
