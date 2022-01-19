@@ -82,9 +82,15 @@ class Clientworker:
                 break
 
     def constructRTPclient(self):
-        self.rtpclient = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        #handle video transmission
+        self.rtpclient_video = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         address = self.serveraddr[0], self.serveraddr[1] + 1
-        self.rtpclient.sendto(b'hi', address)
+        self.rtpclient_video.sendto(b'hi', address)
+
+        #handle audio transmission
+        self.rtpclient_audio = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        address = self.serveraddr[0], self.serveraddr[1] + 2
+        self.rtpclient_audio.sendto(b'hi', address)
 
     def image_decode(self, image, str):
         with open(image, "wb") as writeFile:
