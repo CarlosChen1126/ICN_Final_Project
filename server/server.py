@@ -1,10 +1,10 @@
 import socket
 import sys
-import cv2
-import base64
 from serverworker import Serverworker, Video, Audio
 from VideoStream import VideoStream
 import threading
+import wave
+import pyaudio
 
 # Specify the IP addr and port number
 # (use "127.0.0.1" for localhost on local machine)
@@ -44,8 +44,13 @@ while(True):
     if (requestType == "SETUP"):
         try:
             videostream = VideoStream(filename)
-
-            reply = 'RTSP/1.0 200 OK\nCSeq: ' + seqnum + '\nSession: ' + str(123)
+            wf = wave.open("./image/movie.wav", 'rb')
+            p = pyaudio.PyAudio()
+            Format = p.get_format_from_width(wf.getsampwidth())
+            Channels = wf.getnchannels()
+            Rate = wf.getframerate()
+            p.terminate()
+            reply = 'RTSP/1.0 200 OK\nCSeq: ' + seqnum + '\nSession: ' + str(123) + '\nFormat: ' + str(Format) + '\nChannels: ' + str(Channels) + '\nRate: ' + str(Rate)
             connect_socket.send(bytes(reply, 'utf-8'))
 
             # 收到SETUP就建立video
@@ -55,7 +60,7 @@ while(True):
 
             # 收到SETUP就建立audio
             client, address = rtpserver_audio.recvfrom(1024)
-            audio = Audio("./image/movie.wav", rtpserver_audio, serverworker, address)
+            audio = Audio(wf, rtpserver_audio, serverworker, address)
             threading.Thread(target=audio.run).start()
         except IOError:
             reply = 'RTSP/1.0 404 Not Found\nCSeq: ' + seqnum + '\nSession: ' + str(123)

@@ -1,10 +1,7 @@
-from cmath import pi
 import sys
 import pygame
 from clientworker import Clientworker
-import threading
 from RtpPacket import RtpPacket
-import pyaudio
 
 
 class PlayerWindow:
@@ -27,14 +24,6 @@ class PlayerWindow:
         self.send_and_receive.connectToServer(HOST, PORT)
         self.send_and_receive.sendRtspRequest('SETUP')
 
-        self.p = pyaudio.PyAudio()
-        self.stream = self.p.open(
-            format = 8,
-            channels = 2,
-            rate = 8000,
-            output = True
-        )
-
     def update_window(self):
         self.WIN.fill(self.YELLOW_BACKGROUND)
 
@@ -49,7 +38,7 @@ class PlayerWindow:
                 self.send_and_receive.image_decode(cache_name, bytedata)
             else:
                 # movie end
-                self.send_and_receive.state = "PAUSE"
+                self.send_and_receive.state = "OFF"
 
             picture = pygame.image.load('test_res.jpg')
             image_rect = picture.get_rect(center=self.WIN.get_rect().center)
@@ -59,10 +48,10 @@ class PlayerWindow:
                 picture = pygame.transform.scale(picture, (int(self.HEIGHT*9/10*width/height), int(self.HEIGHT*9/10)))
                 self.WIN.blit(picture, ((self.WIDTH - self.HEIGHT*9/10*width/height)/2,0))
             else:
-                picture = pygame.transform.scale(picture, (self.WIDTH, self.WIDTH/width*height))
+                picture = pygame.transform.scale(picture, (int(self.WIDTH), int(self.WIDTH/width*height)))
                 self.WIN.blit(picture, (0,0))
 
-        elif (self.send_and_receive.state == "PAUSE"):
+        elif (self.send_and_receive.state == "PAUSE" or self.send_and_receive.state == "OFF"):
             picture = pygame.image.load('test_res.jpg')
             image_rect = picture.get_rect(center=self.WIN.get_rect().center)
             width = image_rect.right - image_rect.left
@@ -71,7 +60,7 @@ class PlayerWindow:
                 picture = pygame.transform.scale(picture, (int(self.HEIGHT*9/10*width/height), int(self.HEIGHT*9/10)))
                 self.WIN.blit(picture, ((self.WIDTH - self.HEIGHT*9/10*width/height)/2,0))
             else:
-                picture = pygame.transform.scale(picture, (self.WIDTH, self.WIDTH/width*height))
+                picture = pygame.transform.scale(picture, (int(self.WIDTH), int(self.WIDTH/width*height)))
                 self.WIN.blit(picture, (0,0))
 
         # button & press
@@ -107,25 +96,6 @@ class PlayerWindow:
 
         pygame.display.update()
 
-    def play_audio(self):
-        while(True):
-            if (self.send_and_receive.state == "PLAY"):
-                audio = self.send_and_receive.rtpclient_audio.recv(65535)
-                if audio:
-                    #聲音還沒播完
-                    rtp = RtpPacket()
-                    rtp.decode(audio)
-                    #print('payload: ', len(rtp.getPayload()))
-                    bytedata = rtp.getPayload()
-                    self.stream.write(bytedata)
-                else:
-                    #聲音播完了
-                    """ Graceful shutdown """ 
-                    self.stream.close()
-                    self.p.terminate()
-                    break
-            elif(self.send_and_receive.state == "INIT"):
-                break
     def window_handler(self):
         run = True
         while run:
@@ -140,7 +110,6 @@ class PlayerWindow:
                     elif self.WIDTH/4*1 <= mouse[0] <= self.WIDTH/4*2-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
                         print('play')
                         self.send_and_receive.sendRtspRequest('PLAY')
-                        threading.Thread(target=self.play_audio).start()
                     elif self.WIDTH/4*2 <= mouse[0] <= self.WIDTH/4*3-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
                         print('pause')
                         self.send_and_receive.sendRtspRequest('PAUSE')

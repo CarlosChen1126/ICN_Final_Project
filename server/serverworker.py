@@ -81,9 +81,9 @@ class Video(threading.Thread):
 class Audio(threading.Thread):
     chunk = 1024
 
-    def __init__(self, file, rtpserver, serverworker, address):
+    def __init__(self, wf, rtpserver, serverworker, address):
         """ Init audio stream """ 
-        self.wf = wave.open(file, 'rb')
+        self.wf = wf
         self.flag = threading.Event()
         self.flag.clear()
         self.running = threading.Event()

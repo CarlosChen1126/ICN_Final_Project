@@ -1,6 +1,8 @@
 import base64
 import socket
 import threading
+import pyaudio
+from RtpPacket import RtpPacket
 
 
 class Clientworker:
@@ -9,12 +11,14 @@ class Clientworker:
 
     def __init__(self):
         self.rtspSeq = 0        # rtsp request's sequence number
-        self.state = "INIT"     # have four state : INIT SETUP PLAY PAUSE
+        self.state = "INIT"     # have five state : INIT SETUP PLAY PAUSE "OFF"
         self.serveraddr = 0
         self.fileName = "./image/t1.mjpeg"
         self.rtpPort = 10
         self.sessionId = 0
         self.requestSent = 0
+        self.p = pyaudio.PyAudio()
+        self.stream = 0
 
     def connectToServer(self, address, port):
         # rtsp client using tcp
@@ -40,7 +44,7 @@ class Clientworker:
             request += "\nCSeq: %d" % self.rtspSeq
 
             self.rtspclient.send(bytes(request, 'utf-8'))
-        elif(requestCode == "PLAY"):
+        elif(requestCode == "PLAY" and self.state != "OFF"):
             self.requestSent = "PLAY"
 
             # Write the RTSP request to be sent.
@@ -50,7 +54,7 @@ class Clientworker:
             request += "\nSession: %d" % self.sessionId
 
             self.rtspclient.send(bytes(request, 'utf-8'))
-        elif(requestCode == "PAUSE"):
+        elif(requestCode == "PAUSE" and self.state != "OFF"):
             self.requestSent = "PAUSE"
 
             # Write the RTSP request to be sent.
@@ -78,13 +82,22 @@ class Clientworker:
             print(response)
             lines = response.split('\n')
             seqNum = int(lines[1].split(' ')[1])
-            print(seqNum)
             # only handle right sequence number
             if(self.rtspSeq == seqNum):
                 # Close the RTSP socket if state is INIT
                 if self.requestSent == "SETUP":
                     self.state = "SETUP"
+                    format = int(lines[3].split(' ')[1])
+                    channel = int(lines[4].split(' ')[1])
+                    rate = int(lines[5].split(' ')[1])
+                    self.stream = self.p.open(
+                        format = format,
+                        channels = channel,
+                        rate = rate,
+                        output = True
+                    )
                     self.constructRTPclient()
+                    threading.Thread(target=self.play_audio).start()
                 elif self.requestSent == "PLAY":
                     self.state = "PLAY"
                 elif self.requestSent == "PAUSE":
@@ -105,6 +118,26 @@ class Clientworker:
         self.rtpclient_audio = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         address = self.serveraddr[0], self.serveraddr[1] + 2
         self.rtpclient_audio.sendto(b'hi', address)
+
+    def play_audio(self):
+        while(True):
+            if (self.state == "PLAY"):
+                audio = self.rtpclient_audio.recv(65535)
+                if audio:
+                    #聲音還沒播完
+                    rtp = RtpPacket()
+                    rtp.decode(audio)
+                    #print('payload: ', len(rtp.getPayload()))
+                    bytedata = rtp.getPayload()
+                    self.stream.write(bytedata)
+                else:
+                    #聲音播完了
+                    """ Graceful shutdown """ 
+                    self.stream.close()
+                    self.p.terminate()
+                    break
+            elif(self.state == "INIT"):
+                break
 
     def image_decode(self, image, str):
         with open(image, "wb") as writeFile:
