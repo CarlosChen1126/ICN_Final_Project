@@ -1,5 +1,8 @@
 from RtpPacket import RtpPacket
 import socket
+import threading
+import cv2
+import base64
 
 
 class Serverworker:
@@ -31,3 +34,99 @@ class Serverworker:
         rtp.encode(version, padding, extension, cc,
                    marker, pt, seqnum, ssrc, ci, bytedata)
         return rtp
+
+
+class Video(threading.Thread):
+    def __init__(self, video, rtpserver, serverworker, address):
+        super(Video, self).__init__()
+        self.flag = threading.Event()
+        self.flag.clear()
+        self.running = threading.Event()
+        self.running.set()
+        self.video = video
+        self.rtpserver = rtpserver
+        self.serverworker = serverworker
+        self.address = address
+
+    def run(self):
+        while self.running.isSet():
+            self.flag.wait()
+            frame = self.video.nextFrame()
+            cv2.waitKey(30)
+            if frame:
+                # 影片還沒播完
+                # encode frame
+                bytedata = base64.encodebytes(frame)
+                rtp = self.serverworker.createRTP(
+                    self.video.frameNbr(), bytedata)
+                #print(len(rtp.getPayload()))
+                self.rtpserver.sendto(rtp.getPacket(), self.address)
+            else:
+                # 影片播完了
+                self.rtpserver.sendto(b"", self.address)
+                self.flag.clear()
+                break
+
+    def pause(self):
+        self.flag.clear()
+
+    def resume(self):
+        self.flag.set()
+
+    def stop(self):
+        self.flag.set()
+        self.running.clear()
+
+import wave
+
+class Audio(threading.Thread):
+    chunk = 1024
+
+    def __init__(self, file, rtpserver, serverworker, address):
+        """ Init audio stream """ 
+        self.wf = wave.open(file, 'rb')
+        self.flag = threading.Event()
+        self.flag.clear()
+        self.running = threading.Event()
+        self.running.set()
+        self.rtpserver = rtpserver
+        self.serverworker = serverworker
+        self.address = address
+        self.frameNbr = 0
+
+    def play(self):
+        """ Play entire file """
+        data = self.wf.readframes(self.chunk)
+        while data != '':
+            self.stream.write(data)
+            data = self.wf.readframes(self.chunk)
+
+    def run(self):
+        while self.running.isSet():
+            self.flag.wait()
+            frame = self.wf.readframes(self.chunk)
+            cv2.waitKey(120)
+            self.frameNbr += 1
+            if frame:
+                # 影片還沒播完
+                # encode frame
+                rtp = self.serverworker.createRTP(
+                    self.frameNbr, frame)
+                print(len(rtp.getPayload()))
+                self.rtpserver.sendto(rtp.getPacket(), self.address)
+            else:
+                # 影片播完了
+                print(123)
+                self.rtpserver.sendto(b"", self.address)
+                self.flag.clear()
+                break
+
+    def pause(self):
+        self.flag.clear()
+
+    def resume(self):
+        self.flag.set()
+
+    def stop(self):
+        self.flag.set()
+        self.running.clear()
