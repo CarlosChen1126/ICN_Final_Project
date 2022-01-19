@@ -10,7 +10,7 @@ class Clientworker:
         self.rtspSeq = 0        # rtsp request's sequence number
         self.state = "INIT"     # have four state : INIT SETUP PLAY PAUSE
         self.serveraddr = 0
-        self.fileName = "./image/t.Mjpeg"
+        self.fileName = "./image/movie.Mjpeg"
         self.rtpPort = 10
         self.sessionId = 0
 
@@ -82,12 +82,12 @@ class Clientworker:
                 break
 
     def constructRTPclient(self):
-        #handle video transmission
+        # handle video transmission
         self.rtpclient_video = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         address = self.serveraddr[0], self.serveraddr[1] + 1
         self.rtpclient_video.sendto(b'hi', address)
 
-        #handle audio transmission
+        # handle audio transmission
         self.rtpclient_audio = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         address = self.serveraddr[0], self.serveraddr[1] + 2
         self.rtpclient_audio.sendto(b'hi', address)
