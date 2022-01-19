@@ -1,6 +1,6 @@
 import base64
 import socket
-
+import threading
 
 class Clientworker:
     RTSP_VER = "RTSP/1.0"
@@ -13,6 +13,7 @@ class Clientworker:
         self.fileName = "./image/movie.Mjpeg"
         self.rtpPort = 10
         self.sessionId = 0
+        self.requestSent = 0
 
     def connectToServer(self, address, port):
         # rtsp client using tcp
@@ -27,8 +28,8 @@ class Clientworker:
         # Send RTSP request to the server
         self.rtspSeq += 1
         if(requestCode == "SETUP" and self.state == "INIT"):
-            self.state = "SETUP"
-            # threading.Thread(target=self.recvRtspResponse).start()
+            self.requestSent = "SETUP"
+            threading.Thread(target=self.recvRtspResponse).start()
 
             # Write the RTSP request to be sent.
             request = "Request: %s %s %s" % (requestCode,self.fileName,self.RTSP_VER)
@@ -36,9 +37,8 @@ class Clientworker:
             request+="\nCSeq: %d" % self.rtspSeq
 
             self.rtspclient.send(bytes(request, 'utf-8'))
-            self.constructRTPclient()
         elif(requestCode == "PLAY"):
-            self.state = "PLAY"
+            self.requestSent = "PLAY"
 
             # Write the RTSP request to be sent.
             request = "Request: %s %s %s" % (requestCode,self.fileName,self.RTSP_VER)
@@ -47,7 +47,7 @@ class Clientworker:
 
             self.rtspclient.send(bytes(request, 'utf-8'))
         elif(requestCode == "PAUSE"):
-            self.state = "PAUSE"
+            self.requestSent = "PAUSE"
 
             # Write the RTSP request to be sent.
             request = "Request: %s %s %s" % (requestCode,self.fileName,self.RTSP_VER)
@@ -56,7 +56,7 @@ class Clientworker:
 
             self.rtspclient.send(bytes(request, 'utf-8'))
         elif(requestCode == "TEARDOWN"):
-            self.state = "INIT"
+            self.requestSent = "TEARDOWN"
 
             # Write the RTSP request to be sent.
             request = "Request: %s %s %s" % (requestCode,self.fileName,self.RTSP_VER)
@@ -70,11 +70,25 @@ class Clientworker:
         while True:
             response = self.rtspclient.recv(1024).decode("utf-8")
             print(response)
-            # Close the RTSP socket if state is INIT
-            if self.state == "INIT":
-                self.rtspclient.shutdown(socket.SHUT_RDWR)
-                self.rtspclient.close()
-                break
+            lines = response.split('\n')
+            seqNum = int(lines[1].split(' ')[1])
+            print(seqNum)
+            # only handle right sequence number
+            if(self.rtspSeq == seqNum):
+                # Close the RTSP socket if state is INIT
+                if self.requestSent == "SETUP":
+                    self.state = "SETUP"
+                    self.constructRTPclient()
+                elif self.requestSent == "PLAY":
+                    self.state = "PLAY"
+                elif self.requestSent == "PAUSE":
+                    self.state = "PAUSE"
+                elif self.requestSent == "TEARDOWN":
+                    self.state = "INIT"
+                    self.rtspclient.shutdown(socket.SHUT_RDWR)
+                    self.rtspclient.close()
+                    break
+            
 
     def constructRTPclient(self):
         #handle video transmission
