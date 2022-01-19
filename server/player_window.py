@@ -23,6 +23,7 @@ class PlayerWindow:
         self.send_and_receive = Clientworker()
         # address# & port#  e.g.:'127.0.0.1', 8888
         self.send_and_receive.connectToServer(HOST, PORT)
+        self.send_and_receive.sendRtspRequest('SETUP')
 
     def update_window(self):
         self.WIN.fill(self.YELLOW_BACKGROUND)
@@ -78,21 +79,20 @@ class PlayerWindow:
                              self.WIDTH/4*3, self.HEIGHT*9/10, self.WIDTH/4-20, self.HEIGHT/10])
 
         # word
-        set_up = self.FONT.render('SET UP', True, self.WORD_COLOR)
-        play = self.FONT.render('PLAY', True, self.WORD_COLOR)
-        pause = self.FONT.render('PAUSE', True, self.WORD_COLOR)
-        teardown = self.FONT.render('TEARDOWN', True, self.WORD_COLOR)
+        slower = self.FONT.render('Slower', True, self.WORD_COLOR)
+        play = self.FONT.render('Play', True, self.WORD_COLOR)
+        pause = self.FONT.render('Pause', True, self.WORD_COLOR)
+        faster = self.FONT.render('Faster', True, self.WORD_COLOR)
         offset = self.WIDTH/50
-        self.WIN.blit(set_up, (offset, self.HEIGHT*9/10))
+        self.WIN.blit(slower, (offset, self.HEIGHT*9/10))
         self.WIN.blit(play, (self.WIDTH/4*1+offset, self.HEIGHT*9/10))
         self.WIN.blit(pause, (self.WIDTH/4*2+offset, self.HEIGHT*9/10))
-        self.WIN.blit(teardown, (self.WIDTH/4*3+offset/2, self.HEIGHT*9/10))
+        self.WIN.blit(faster, (self.WIDTH/4*3+offset/2, self.HEIGHT*9/10))
 
         pygame.display.update()
 
     def window_handler(self):
         run = True
-        # TBmodified
         threading.Thread(target=self.send_and_receive.recvRtspResponse).start()
         while run:
             for event in pygame.event.get():
@@ -101,8 +101,8 @@ class PlayerWindow:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse = pygame.mouse.get_pos()
                     if 5 <= mouse[0] <= self.WIDTH/4*1-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
-                        print('set up')
-                        self.send_and_receive.sendRtspRequest('SETUP')
+                        print('slower')
+                        # slower
                     elif self.WIDTH/4*1 <= mouse[0] <= self.WIDTH/4*2-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
                         print('play')
                         self.send_and_receive.sendRtspRequest('PLAY')
@@ -110,9 +110,10 @@ class PlayerWindow:
                         print('pause')
                         self.send_and_receive.sendRtspRequest('PAUSE')
                     elif self.WIDTH/4*3 <= mouse[0] <= self.WIDTH/4*4-20 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
-                        self.send_and_receive.sendRtspRequest('TEARDOWN')
-                        run = False
+                        print('faster')
+                        # faster
             self.update_window()
+        self.send_and_receive.sendRtspRequest('TEARDOWN')
         pygame.quit()
 
 
