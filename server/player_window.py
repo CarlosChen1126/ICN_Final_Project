@@ -84,15 +84,13 @@ class PlayerWindow:
                              self.WIDTH/4*3, self.HEIGHT*9/10, self.WIDTH/4, self.HEIGHT/10])
 
         # word
-        slower = self.FONT.render('Slower', True, self.WORD_COLOR)
+        
         play = self.FONT.render('Play', True, self.WORD_COLOR)
         pause = self.FONT.render('Pause', True, self.WORD_COLOR)
-        faster = self.FONT.render('Faster', True, self.WORD_COLOR)
+        
         offset = self.WIDTH/50
-        self.WIN.blit(slower, (offset, self.HEIGHT*9/10))
         self.WIN.blit(play, (self.WIDTH/4*1+offset, self.HEIGHT*9/10))
         self.WIN.blit(pause, (self.WIDTH/4*2+offset, self.HEIGHT*9/10))
-        self.WIN.blit(faster, (self.WIDTH/4*3+offset/2, self.HEIGHT*9/10))
 
         pygame.display.update()
 
@@ -105,7 +103,7 @@ class PlayerWindow:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse = pygame.mouse.get_pos()
                     if 5 <= mouse[0] <= self.WIDTH/4*1-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
-                        print('slower')
+                        pass
                         # slower
                     elif self.WIDTH/4*1 <= mouse[0] <= self.WIDTH/4*2-50 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
                         print('play')
@@ -114,7 +112,7 @@ class PlayerWindow:
                         print('pause')
                         self.send_and_receive.sendRtspRequest('PAUSE')
                     elif self.WIDTH/4*3 <= mouse[0] <= self.WIDTH/4*4-20 and self.HEIGHT*9/10 <= mouse[1] <= self.HEIGHT-10:
-                        print('faster')
+                        pass
                         # faster
             self.update_window()
         self.send_and_receive.sendRtspRequest('TEARDOWN')
@@ -122,7 +120,7 @@ class PlayerWindow:
 
 
 if __name__ == "__main__":
-    input_file = input('Which video would you like to watch?')
+    input_file = input('Which video would you like to watch?\n')
     HOST, PORT = sys.argv[1], int(sys.argv[2])
     test1 = PlayerWindow(HOST, PORT, input_file)
     test1.window_handler()
