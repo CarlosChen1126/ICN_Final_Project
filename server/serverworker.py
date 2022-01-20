@@ -3,7 +3,7 @@ import socket
 import threading
 import cv2
 import base64
-import wave
+import time
 
 
 class Serverworker:
@@ -52,8 +52,8 @@ class Video(threading.Thread):
     def run(self):
         while self.running.isSet():
             self.flag.wait()
+            second = time.time()
             frame = self.video.nextFrame()
-            cv2.waitKey(30)
             if frame:
                 # 影片還沒播完
                 # encode frame
@@ -61,6 +61,8 @@ class Video(threading.Thread):
                 rtp = self.serverworker.createRTP(
                     self.video.frameNbr(), bytedata)
                 #print(len(rtp.getPayload()))
+                delay = time.time() - second
+                cv2.waitKey(int((self.video.frametime - delay)*1000))
                 self.rtpserver.sendto(rtp.getPacket(), self.address)
             else:
                 # 影片播完了

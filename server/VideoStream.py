@@ -6,22 +6,13 @@ class VideoStream:
         self.filename = filename
         try:
             self.file = cv2.VideoCapture(filename)
+            self.frametime = 1/self.file.get(cv2.CAP_PROP_FPS)
         except:
             raise IOError
         self.frameNum = 0
 
     def nextFrame(self):
         """Get next frame."""
-        '''
-		data = self.file.read(5) # Get the framelength from the first 5 bits
-		if data: 
-			framelength = int(data)
-							
-			# Read the current frame
-			data = self.file.read(framelength)
-			self.frameNum += 1
-		return data
-		'''
         retval, image = self.file.read()
         data = None
         if retval:

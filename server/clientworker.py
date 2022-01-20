@@ -9,11 +9,11 @@ class Clientworker:
     RTSP_VER = "RTSP/1.0"
     TRANSPORT = "RTP/UDP"
 
-    def __init__(self):
+    def __init__(self, input_file):
         self.rtspSeq = 0        # rtsp request's sequence number
-        self.state = "INIT"     # have five state : INIT SETUP PLAY PAUSE "OFF"
+        self.state = "INIT"     # have five state : INIT SETUP PLAY PAUSE OFF
         self.serveraddr = 0
-        self.fileName = "./image/t1.mjpeg"
+        self.fileName = "./image/"+input_file
         self.rtpPort = 10
         self.sessionId = 0
         self.requestSent = 0
@@ -82,22 +82,37 @@ class Clientworker:
             print(response)
             lines = response.split('\n')
             seqNum = int(lines[1].split(' ')[1])
+            print(int(lines[0].split(' ')[1]))
             # only handle right sequence number
             if(self.rtspSeq == seqNum):
                 # Close the RTSP socket if state is INIT
                 if self.requestSent == "SETUP":
-                    self.state = "SETUP"
-                    format = int(lines[3].split(' ')[1])
-                    channel = int(lines[4].split(' ')[1])
-                    rate = int(lines[5].split(' ')[1])
-                    self.stream = self.p.open(
-                        format = format,
-                        channels = channel,
-                        rate = rate,
-                        output = True
-                    )
-                    self.constructRTPclient()
-                    threading.Thread(target=self.play_audio).start()
+                    if(int(lines[0].split(' ')[1]) == 200):
+                        self.state = "SETUP"
+                        format = int(lines[3].split(' ')[1])
+                        channel = int(lines[4].split(' ')[1])
+                        rate = int(lines[5].split(' ')[1])
+                        self.stream = self.p.open(
+                            format = format,
+                            channels = channel,
+                            rate = rate,
+                            output = True
+                        )
+                        self.constructRTPclient()
+                        threading.Thread(target=self.play_audio).start()
+                    else:
+                        #file not found
+                        input_file = input('File not found. Try anothor file: ')
+                        self.fileName = "./image/"+input_file
+                        
+                        # Write the RTSP request to be sent.
+                        request = "Request: %s %s %s" % (
+                            "SETUP", self.fileName, self.RTSP_VER)
+                        request += "\nTransport: %s; client_port= %d" % (
+                            self.TRANSPORT, self.rtpPort)
+                        request += "\nCSeq: %d" % self.rtspSeq
+
+                        self.rtspclient.send(bytes(request, 'utf-8'))
                 elif self.requestSent == "PLAY":
                     self.state = "PLAY"
                 elif self.requestSent == "PAUSE":
