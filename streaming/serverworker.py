@@ -3,7 +3,6 @@ import socket
 import threading
 import cv2
 import base64
-import time
 
 
 class Serverworker:
@@ -52,7 +51,6 @@ class Video(threading.Thread):
     def run(self):
         while self.running.isSet():
             self.flag.wait()
-            second = time.time()
             frame = self.video.nextFrame()
             if frame:
                 # 影片還沒播完
@@ -60,15 +58,12 @@ class Video(threading.Thread):
                 bytedata = base64.encodebytes(frame)
                 rtp = self.serverworker.createRTP(
                     self.video.frameNbr(), bytedata)
-                #print(len(rtp.getPayload()))
-                delay = time.time() - second
-                cv2.waitKey(int((self.video.frametime - delay)*1000))
+                cv2.waitKey(20)
                 self.rtpserver.sendto(rtp.getPacket(), self.address)
             else:
                 # 影片播完了
                 self.rtpserver.sendto(b"", self.address)
-                self.flag.clear()
-                break
+                self.running.clear()
 
     def pause(self):
         self.flag.clear()
@@ -86,6 +81,7 @@ class Audio(threading.Thread):
     def __init__(self, wf, rtpserver, serverworker, address):
         """ Init audio stream """ 
         self.wf = wf
+        print("framerate: ", wf.getframerate())
         self.flag = threading.Event()
         self.flag.clear()
         self.running = threading.Event()
@@ -99,14 +95,13 @@ class Audio(threading.Thread):
         while self.running.isSet():
             self.flag.wait()
             frame = self.wf.readframes(self.chunk)
-            cv2.waitKey(120)
+            cv2.waitKey(15)
             self.frameNbr += 1
             if frame:
                 # 聲音還沒播完
                 # encode frame
                 rtp = self.serverworker.createRTP(
                     self.frameNbr, frame)
-                #print(len(rtp.getPayload()))
                 self.rtpserver.sendto(rtp.getPacket(), self.address)
             else:
                 # 聲音播完了
