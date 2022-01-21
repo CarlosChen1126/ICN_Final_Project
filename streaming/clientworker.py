@@ -95,7 +95,7 @@ class Clientworker:
             if(self.rtspSeq == seqNum):
                 # Close the RTSP socket if state is INIT
                 if self.sessionId == 0:
-                    pass
+                    self.sessionId = session
                 if self.requestSent == "SETUP":
                     if(int(lines[0].split(' ')[1]) == 200):
                         self.state = "SETUP"
